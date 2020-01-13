@@ -1,0 +1,9 @@
+# Add Enum Values
+# Add Fake data for "constant" models
+# Add logic to add dynamic data for other tables
+# Send to postgres
+# Check postgres with queries
+# Export data to SQL dump
+# Import SQL to postgres VM
+# Make publci image
+# Write docs on setting up a VM with my public image
