@@ -52,7 +52,11 @@ class SeatLocation(enum.Enum):
 class AircraftSeatMap(Base):
     __tablename__ = 'aircraft_seat_map'
 
-    model = Column(String, ForeignKey('aircraft_types.id'), primary_key=True)
+    aircraft_type_id = Column(
+        String,
+        ForeignKey('aircraft_types.id'),
+        primary_key=True
+    )
     # Eg. 29C
     number = Column(String, primary_key=True)
     # Eg. 1st class, economy, business

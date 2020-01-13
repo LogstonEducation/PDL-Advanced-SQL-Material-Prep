@@ -1,7 +1,8 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from aircraft import load_aircraft_types
+from aircraft import insert_seat_maps
+from aircraft import insert_aircraft_types
 from models import Base
 
 
@@ -12,7 +13,8 @@ def main(engine_url):
     Session = sessionmaker(bind=engine)
     session = Session()
 
-    load_aircraft_types(session)
+    insert_aircraft_types(session)
+    insert_seat_maps(session)
 
 
 if __name__ == '__main__':
