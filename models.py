@@ -1,3 +1,4 @@
+import enum
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
@@ -23,8 +24,11 @@ Base = declarative_base()
 class AircraftType(Base):
     __tablename__ = 'aircraft_types'
 
-    model = Column(String, primary_key=True)
-    cost_per_mile = Column(Float)
+    id = Column(Integer, primary_key=True)
+    manufacturer = Column(String)
+    model = Column(String)
+    # Cost is in cents
+    cost_per_seat_mile = Column(Float)
 
     seat_map = relationship(
         'AircraftSeatMap',
@@ -33,16 +37,28 @@ class AircraftType(Base):
     )
 
 
+class SeatType(enum.Enum):
+    first = 'First'
+    business = 'Business'
+    economy = 'Economy'
+
+
+class SeatLocation(enum.Enum):
+    window = 'Window'
+    center = 'Center'
+    aisle = 'Aisle'
+
+
 class AircraftSeatMap(Base):
     __tablename__ = 'aircraft_seat_map'
 
-    model = Column(String, ForeignKey('aircraft_types.model'), primary_key=True)
+    model = Column(String, ForeignKey('aircraft_types.id'), primary_key=True)
     # Eg. 29C
     number = Column(String, primary_key=True)
     # Eg. 1st class, economy, business
-    level = Column(Enum)
+    type = Column(Enum(SeatType))
     # location (Asile, Window, Center, etc, 10 seats across)
-    location = Column(Enum)
+    location = Column(Enum(SeatLocation))
 
     aircraft_type = relationship('AircraftType', back_populates='seat_map')
 
@@ -52,8 +68,14 @@ class Aircraft(Base):
 
     # Eg. Tail ID
     id = Column(Integer, primary_key=True)
-    type = Column(String, ForeignKey('aircraft_types.model'))
+    type = Column(String, ForeignKey('aircraft_types.id'))
     tach_time = Column(Float)
+
+
+class MaintenanceEventType(enum.Enum):
+    oil = 'Oil'
+    turbine = 'Turbine'
+    tires = 'Tires'
 
 
 class AircraftMaintenanceEvent(Base):
@@ -61,18 +83,28 @@ class AircraftMaintenanceEvent(Base):
     # Aircraft ID (tail ID), Maintenance event, start date, end date, location
 
     aircraft_id = Column(Integer, ForeignKey('aircraft.id'), primary_key=True)
-    event_type = Column(Enum)
+    event_type = Column(Enum(MaintenanceEventType))
     service_start_ts = Column(DateTime, primary_key=True)
     service_end_ts = Column(DateTime)
-    location = Column(String, ForeignKey('destinations.iata_code'))
+    location = Column(String, ForeignKey('airports.iata_code'))
 
 
-class Destination(Base):
-    __tablename__ = 'destinations'
+class Airport(Base):
+    __tablename__ = 'airports'
 
     iata_code = Column(String, primary_key=True)
     service_start_ts = Column(DateTime)
     service_end_ts = Column(DateTime)
+
+
+class DayOfWeek(enum.Enum):
+    monday = 0
+    tuesday = 1
+    wednesday = 2
+    thursday = 3
+    friday = 4
+    saturday = 5
+    sunday = 6
 
 
 class Route(Base):
@@ -81,12 +113,12 @@ class Route(Base):
     # Eg. 3728 in DL3728
     id = Column(Integer, primary_key=True)
     # Day of week route starts from start location
-    start_day = Column(Enum)
+    start_day = Column(Enum(DayOfWeek))
     # Time of day route starts from start location (in UTC)
     start_time_utc = Column(Time)
     duration = Column(Interval)
-    origin_code = Column(String, ForeignKey('destinations.iata_code'))
-    destination_code = Column(String, ForeignKey('destinations.iata_code'))
+    origin_code = Column(String, ForeignKey('airports.iata_code'))
+    destination_code = Column(String, ForeignKey('airports.iata_code'))
     distance = Column(Float)
 
 
@@ -156,11 +188,20 @@ class Ticket(Base):
     )
 
 
+class MealTypeName(enum.Enum):
+    vegan = 'Vegan'
+    vegetarian = 'Vegetarian'
+    kosher = 'Kosher'
+    halal = 'Halal'
+    low_salt = 'Low Salt'
+    diabetic = 'Diabetic'
+
+
 class MealType(Base):
     __tablename__ = 'meal_types'
 
     id = Column(Integer, primary_key=True)
-    description = Column(Text)
+    name = Column(Enum(MealTypeName))
 
 
 class FrequentFlyer(Base):
@@ -168,22 +209,3 @@ class FrequentFlyer(Base):
 
     passenger_id = Column(String, ForeignKey('passengers.id'), primary_key=True)
     route_flight_id = Column(Integer, ForeignKey('route_flights.id'), primary_key=True)
-
-
-def main(engine_url):
-    engine = create_engine(engine_url, echo=True)
-    Base.metadata.create_all(engine)
-
-    Session = sessionmaker(bind=engine)
-    session = Session()
-
-
-if __name__ == '__main__':
-    import argparse
-
-    parser = argparse.ArgumentParser()
-    parser.add_argument('engine_url', default='sqlite:///:memory:')
-
-    args = parser.parse_args()
-
-    main(args.engine_url)
