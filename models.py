@@ -84,13 +84,10 @@ class MaintenanceEventType(enum.Enum):
 
 class AircraftMaintenanceEvent(Base):
     __tablename__ = 'aircraft_maintenance_events'
-    # Aircraft ID (tail ID), Maintenance event, start date, end date, location
 
-    aircraft_id = Column(Integer, ForeignKey('aircraft.id'), primary_key=True)
+    id = Column(Integer, primary_key=True)
+    aircraft_id = Column(Integer, ForeignKey('aircraft.id'))
     event_type = Column(Enum(MaintenanceEventType))
-    service_start_ts = Column(DateTime, primary_key=True)
-    service_end_ts = Column(DateTime)
-    location = Column(String, ForeignKey('airports.iata_code'))
 
 
 class Airport(Base):

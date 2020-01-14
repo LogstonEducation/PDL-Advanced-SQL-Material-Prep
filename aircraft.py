@@ -1,7 +1,10 @@
+import random
+
 from models import AircraftType
 from models import AircraftSeatMap
 from models import Aircraft
 from models import AircraftMaintenanceEvent
+from models import MaintenanceEventType
 from models import SeatType
 from models import SeatLocation
 
@@ -164,30 +167,52 @@ def insert_seat_maps(session):
 
 
 def insert_aircraft_types(session):
+    types = []
     for type_ in AICRAFT_TYPES:
-        session.add(AircraftType(
+        types.append(AircraftType(
             manufacturer=type_[0],
             model=type_[1],
             cost_per_seat_mile=type_[2],
         ))
 
+    session.add_all(types)
     session.flush()
 
 
 def insert_aircraft(session):
+    aircraft_types = session.query(AircraftType)
+    aircraft_type_count = aircraft_types.count()
+    aircraft_types = aircraft_types.all()
+
+    craft = []
+    for i in range(900):
+        craft.append(Aircraft(
+            id=i,
+            type=aircraft_types[i % aircraft_type_count].id,
+            tach_time=random.random() * 100_000,
+        ))
+
+    session.add_all(craft)
+    session.flush()
+
+    return craft
 
 
+def insert_aircraft_maintenance_events(session, aircraft):
+    events = []
+    for craft in aircraft:
+        tach_time = int(craft.tach_time)
+        max_events = 0
+        while tach_time > 1:
+            tach_time /= 10
+            max_events += 1
+        event_count = random.randint(0, max_events)
 
-Aircraft
-    # 249
-    id = Column(Integer, primary_key=True)
-    type = Column(String, ForeignKey('aircraft_types.id'))
-    tach_time = Column(Float)
+        for i in range(event_count):
+            events.append(AircraftMaintenanceEvent(
+                aircraft_id=craft.id,
+                event_type=random.choice(list(MaintenanceEventType)),
+            ))
 
-AircraftMaintenanceEvent
-    aircraft_id = Column(Integer, ForeignKey('aircraft.id'), primary_key=True)
-    event_type = Column(Enum(MaintenanceEventType))
-    service_start_ts = Column(DateTime, primary_key=True)
-    service_end_ts = Column(DateTime)
-    location = Column(String, ForeignKey('airports.iata_code'))
-
+    session.add_all(events)
+    session.flush()
