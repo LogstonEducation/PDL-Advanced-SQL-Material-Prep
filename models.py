@@ -94,8 +94,9 @@ class Airport(Base):
     __tablename__ = 'airports'
 
     iata_code = Column(String, primary_key=True)
-    service_start_ts = Column(DateTime)
-    service_end_ts = Column(DateTime)
+    name = Column(String)
+    city = Column(String)
+    country = Column(String)
 
 
 class DayOfWeek(enum.Enum):

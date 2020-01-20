@@ -5,6 +5,7 @@ from aircraft import insert_seat_maps
 from aircraft import insert_aircraft_types
 from aircraft import insert_aircraft
 from aircraft import insert_aircraft_maintenance_events
+from airport import insert_airports
 from models import Base
 
 
@@ -19,6 +20,7 @@ def main(engine_url):
     insert_seat_maps(session)
     aircraft = insert_aircraft(session)
     insert_aircraft_maintenance_events(session, aircraft)
+    airports = insert_airports(session)
 
 
 
