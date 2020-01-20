@@ -1,3 +1,5 @@
+import random
+
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
@@ -5,11 +7,14 @@ from aircraft import insert_seat_maps
 from aircraft import insert_aircraft_types
 from aircraft import insert_aircraft
 from aircraft import insert_aircraft_maintenance_events
-from airport import insert_airports
+from airports import insert_airports
+from routes import insert_routes
 from models import Base
 
 
 def main(engine_url):
+    random.seed(2020)
+
     engine = create_engine(engine_url, echo=True)
     Base.metadata.create_all(engine)
 
@@ -21,7 +26,7 @@ def main(engine_url):
     aircraft = insert_aircraft(session)
     insert_aircraft_maintenance_events(session, aircraft)
     airports = insert_airports(session)
-
+    routes = insert_routes(session, airports)
 
 
 if __name__ == '__main__':
