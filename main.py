@@ -9,6 +9,7 @@ from aircraft import insert_aircraft
 from aircraft import insert_aircraft_maintenance_events
 from airports import insert_airports
 from routes import insert_routes
+from routes import insert_route_flights
 from models import Base
 
 
@@ -27,6 +28,7 @@ def main(engine_url):
     insert_aircraft_maintenance_events(session, aircraft)
     airports = insert_airports(session)
     routes = insert_routes(session, airports)
+    insert_route_flights(session, aircraft, routes)
 
 
 if __name__ == '__main__':
