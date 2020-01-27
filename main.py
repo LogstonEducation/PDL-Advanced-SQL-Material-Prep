@@ -3,32 +3,34 @@ import random
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from aircraft import insert_seat_maps
+from aircraft import insert_aircraft_seats
 from aircraft import insert_aircraft_types
 from aircraft import insert_aircraft
 from aircraft import insert_aircraft_maintenance_events
 from airports import insert_airports
+from passengers import insert_meal_types
 from routes import insert_routes
 from routes import insert_route_flights
 from models import Base
 
 
-def main(engine_url):
+def main(engine_url, verbose=False):
     random.seed(2020)
 
-    engine = create_engine(engine_url, echo=True)
+    engine = create_engine(engine_url, echo=verbose)
     Base.metadata.create_all(engine)
 
     Session = sessionmaker(bind=engine)
     session = Session()
 
+    meal_types = insert_meal_types(session)
     insert_aircraft_types(session)
-    insert_seat_maps(session)
+    insert_aircraft_seats(session)
     aircraft = insert_aircraft(session)
     insert_aircraft_maintenance_events(session, aircraft)
     airports = insert_airports(session)
     routes = insert_routes(session, airports)
-    insert_route_flights(session, aircraft, routes)
+    insert_route_flights(session, aircraft, routes, meal_types)
 
 
 if __name__ == '__main__':
@@ -36,7 +38,8 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
     parser.add_argument('engine_url', default='sqlite:///:memory:')
+    parser.add_argument('--verbose', '-v', action='count', default=0)
 
     args = parser.parse_args()
 
-    main(args.engine_url)
+    main(args.engine_url, bool(args.verbose))

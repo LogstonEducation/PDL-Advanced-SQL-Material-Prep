@@ -1,7 +1,7 @@
 import random
 
 from models import AircraftType
-from models import AircraftSeatMap
+from models import AircraftSeat
 from models import Aircraft
 from models import AircraftMaintenanceEvent
 from models import MaintenanceEventType
@@ -131,7 +131,7 @@ AIRCRAFT_SEAT_DETAILS = {
 }
 
 
-def build_seat_map(session):
+def build_aircraft_seats(session):
     seats_details = []
     for (manufacturer, model), seat_dicts in AIRCRAFT_SEAT_DETAILS.items():
         aircraft_type = session.query(AircraftType).filter(
@@ -159,9 +159,9 @@ def build_seat_map(session):
     return seats_details
 
 
-def insert_seat_maps(session):
-    seats_details = build_seat_map(session)
-    seats = [AircraftSeatMap(**details) for details in seats_details]
+def insert_aircraft_seats(session):
+    seats_details = build_aircraft_seats(session)
+    seats = [AircraftSeat(**details) for details in seats_details]
     session.add_all(seats)
     session.flush()
 

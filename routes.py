@@ -5,6 +5,9 @@ import random
 from models import DayOfWeek
 from models import Route
 from models import RouteFlight
+from models import SeatAssignment
+from models import Ticket
+from passengers import create_passenger
 
 
 HUBS_IATA_CODES = frozenset([
@@ -150,6 +153,7 @@ def get_aircraft_by_airport_pair(aircraft, routes):
     hub_aircraft = set()
     non_hub_aircraft = set()
     for craft in aircraft:
+        # TODO label aircraft as long distance (hub to hub) capable
         if (craft.type.manufacturer == 'Boeing' and craft.type.model == '787-9'):
             hub_aircraft.add(craft)
         else:
@@ -167,12 +171,16 @@ def get_aircraft_by_airport_pair(aircraft, routes):
     return aircraft_by_airport_pair
 
 
-def build_route_flights(aircraft, routes):
+def build_route_flights(aircraft, routes, meal_types):
     aircraft_by_airport_pair = get_aircraft_by_airport_pair(aircraft, routes)
 
     route_flights = []
+    passengers = []
+    seat_assignments = []
+    tickets = []
     # for every week for the past 10 years
     week_start = datetime.datetime(2020, 1, 5)
+
     while week_start < datetime.datetime(2020, 1, 12):
         # for every route in week
         for route in routes:
@@ -185,22 +193,81 @@ def build_route_flights(aircraft, routes):
             end_ts = start_ts + route.duration
             # Add some randomness to make things interesting
 
-            route_flights.append(RouteFlight(
-                route_id=route.id,
+            route_flight = RouteFlight(
+                route=route,
                 start_ts=start_ts,
                 end_ts=end_ts,
-                aircraft_id=craft.id,
-            ))
+                aircraft=craft,
+            )
+            route_flights.append(route_flight)
+
+            (new_passengers,
+             new_seat_assignments,
+             new_tickets) = build_ticket_related_objects(route_flight, meal_types)
+
+            passengers.extend(new_passengers)
+            seat_assignments.extend(new_seat_assignments)
+            tickets.extend(new_tickets)
 
         week_start += datetime.timedelta(days=7)
 
-    return route_flights
+    return route_flights, passengers, seat_assignments, tickets
 
 
-def insert_route_flights(session, aircraft, routes):
-    route_flights = build_route_flights(aircraft, routes)
+def build_ticket_related_objects(route_flight, meal_types):
+    passengers = []
+    seat_assignments = []
+    tickets = []
+
+    seats = route_flight.aircraft.type.seats
+
+    # Select some percentage of seats
+    sold_seats = random.sample(
+        population=seats,
+        k=random.randint(1, len(seats)),
+    )
+
+    for seat in sold_seats:
+        # TODO for some percentage of passengers create a new passenger
+        # otherwise select old passenger
+        passenger = create_passenger(meal_types)
+        passengers.append(passenger)
+
+        seat_assignment = SeatAssignment(
+            route_flight=route_flight,
+            seat_id=seat.number,
+            passenger=passenger,
+        )
+        seat_assignments.append(seat_assignment)
+
+        # TODO, make purchase ts some time between 6 months and 30 minutes
+        # before flight.
+        purchase_ts = route_flight.start_ts
+
+        # TODO make function to get cost based on time before flight and seat
+        cost = 10.0
+
+        ticket = Ticket(
+            seat_assignment=seat_assignment,
+            purchase_ts=purchase_ts,
+            cost=cost,
+        )
+        tickets.append(ticket)
+
+    return passengers, seat_assignments, tickets
+
+
+def insert_route_flights(session, aircraft, routes, meal_types):
+    (route_flights,
+     passengers,
+     seat_assignments,
+     tickets) = build_route_flights(aircraft, routes, meal_types)
 
     session.add_all(route_flights)
     session.flush()
-
-    return route_flights
+    session.add_all(passengers)
+    session.flush()
+    session.add_all(seat_assignments)
+    session.flush()
+    session.add_all(tickets)
+    session.flush()

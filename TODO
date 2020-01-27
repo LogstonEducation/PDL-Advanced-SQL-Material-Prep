@@ -4,16 +4,3 @@
 # Import SQL to postgres VM
 # Make publci image
 # Write docs on setting up a VM with my public image
-
-
-
-
-Airport
-
-Route(Base):
-RouteFlight(Base):
-
-Passenger(Base):
-SeatAssignment(Base):
-Ticket(Base):
-FrequentFlyer(Base):
