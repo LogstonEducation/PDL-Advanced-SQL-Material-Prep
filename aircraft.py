@@ -188,7 +188,7 @@ def insert_aircraft(session):
     for i in range(900):
         craft.append(Aircraft(
             id=i,
-            type=aircraft_types[i % aircraft_type_count].id,
+            type_id=aircraft_types[i % aircraft_type_count].id,
             tach_time=random.random() * 100_000,
         ))
 

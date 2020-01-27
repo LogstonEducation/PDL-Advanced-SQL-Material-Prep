@@ -137,7 +137,7 @@ def get_ts(week_start, dow, time) -> datetime.datetime:
     return datetime.datetime(
         year=week_start.year,
         month=week_start.month,
-        day=week_start.day + dow,
+        day=week_start.day + dow.value,
         hour=time.hour,
         minute=time.minute,
         second=time.second,
@@ -157,7 +157,7 @@ def get_aircraft_by_airport_pair(aircraft, routes):
 
     aircraft_by_airport_pair = {}
     for route in routes:
-        airport_pair = frozenset(route.origin_code, route.destination_code)
+        airport_pair = frozenset((route.origin_code, route.destination_code))
         if airport_pair not in aircraft_by_airport_pair:
             if airport_pair.issubset(HUBS_IATA_CODES):
                 aircraft_by_airport_pair[airport_pair] = hub_aircraft.pop()
@@ -176,7 +176,7 @@ def build_route_flights(aircraft, routes):
     while week_start < datetime.datetime(2020, 1, 12):
         # for every route in week
         for route in routes:
-            airport_pair = frozenset(route.origin_code, route.destination_code)
+            airport_pair = frozenset((route.origin_code, route.destination_code))
             craft = aircraft_by_airport_pair[airport_pair]
 
             start_ts = get_ts(week_start, route.start_day, route.start_time_utc)
@@ -189,7 +189,7 @@ def build_route_flights(aircraft, routes):
                 route_id=route.id,
                 start_ts=start_ts,
                 end_ts=end_ts,
-                aircraft=craft,
+                aircraft_id=craft.id,
             ))
 
         week_start += datetime.timedelta(days=7)
@@ -202,3 +202,5 @@ def insert_route_flights(session, aircraft, routes):
 
     session.add_all(route_flights)
     session.flush()
+
+    return route_flights

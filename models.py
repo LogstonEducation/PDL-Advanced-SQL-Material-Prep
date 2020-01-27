@@ -72,8 +72,14 @@ class Aircraft(Base):
 
     # Eg. Tail ID
     id = Column(Integer, primary_key=True)
-    type = Column(String, ForeignKey('aircraft_types.id'))
+    type_id = Column(
+        Integer,
+        ForeignKey('aircraft_types.id'),
+        primary_key=True
+    )
     tach_time = Column(Float)
+
+    type = relationship('AircraftType')
 
 
 class MaintenanceEventType(enum.Enum):
