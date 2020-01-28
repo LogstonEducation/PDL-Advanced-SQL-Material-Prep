@@ -7,6 +7,8 @@ from models import Route
 from models import RouteFlight
 from models import SeatAssignment
 from models import Ticket
+from models import SeatType
+from models import SeatLocation
 from passengers import create_passenger
 
 
@@ -21,6 +23,15 @@ HUBS_IATA_CODES = frozenset([
     'SLC',
     'SEA',
 ])
+
+# Seconds off of departure time for purchase ts
+EARLIEST = 6 * 30 * 24 * 60 * 60  # 6 months prior to departure
+LATEST = 30 * 60  # 30 minutes prior to departure
+
+# (500 mph is average speed of jet)
+MPH = 500
+MAX_HOURS = 6
+MAX_DISTANCE = MAX_HOURS * MPH
 
 
 def get_time_parts(seconds):
@@ -91,8 +102,7 @@ def build_routes(airport_pairs):
         ).total_seconds()
 
         # approximate distance based on duration
-        # (500 mph is average speed of jet)
-        distance = round(500 * duration, 2)
+        distance = round(MPH * duration, 2)
 
         for dow in list(DayOfWeek):
             seconds = delay
@@ -183,7 +193,7 @@ def build_route_flights(aircraft, routes, meal_types):
 
     while week_start < datetime.datetime(2020, 1, 12):
         # for every route in week
-        for route in routes:
+        for route in [routes[0]]:
             airport_pair = frozenset((route.origin_code, route.destination_code))
             craft = aircraft_by_airport_pair[airport_pair]
 
@@ -240,12 +250,10 @@ def build_ticket_related_objects(route_flight, meal_types):
         )
         seat_assignments.append(seat_assignment)
 
-        # TODO, make purchase ts some time between 6 months and 30 minutes
-        # before flight.
-        purchase_ts = route_flight.start_ts
+        purchase_ts_offset = get_purchase_ts_offset(route_flight.start_ts)
+        purchase_ts = route_flight.start_ts - datetime.timedelta(seconds=purchase_ts_offset)
 
-        # TODO make function to get cost based on time before flight and seat
-        cost = 10.0
+        cost = get_cost(route_flight.route.distance, seat, purchase_ts_offset)
 
         ticket = Ticket(
             seat_assignment=seat_assignment,
@@ -255,6 +263,39 @@ def build_ticket_related_objects(route_flight, meal_types):
         tickets.append(ticket)
 
     return passengers, seat_assignments, tickets
+
+
+def get_purchase_ts_offset(route_flight_ts):
+    # Tuned for 0.75 - 0.8 as most common return value
+    frac = random.betavariate(50, 15)
+
+    seconds = (frac - 1) * (EARLIEST - LATEST) + LATEST
+
+    return int(seconds)
+
+
+def get_cost(distance, aircraft_seat, purchase_ts_offset):
+    seat_type_frac = {
+        SeatType.first: 3.0,
+        SeatType.business: 2.0,
+        SeatType.economy: 1.0,
+    }.get(aircraft_seat.type)
+
+    seat_location_frac = {
+        SeatLocation.window: 0.5,
+        SeatLocation.center: 0.0,
+        SeatLocation.aisle: 1.0,
+    }.get(aircraft_seat.location)
+
+    # Closer to 0 is more savings, closer to 1 is more expensive
+    purchase_frac = 1 - ((purchase_ts_offset - LATEST) / (EARLIEST - LATEST))
+
+    base = distance * 0.1
+    cost = base * seat_type_frac
+    cost = cost + (cost * 0.01) * seat_location_frac
+    cost = cost + (cost * purchase_frac)
+
+    return round(cost, 2)
 
 
 def insert_route_flights(session, aircraft, routes, meal_types):
