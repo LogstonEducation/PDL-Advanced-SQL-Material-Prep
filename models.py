@@ -11,11 +11,18 @@ from sqlalchemy import (
     DateTime,
     Time,
     Enum,
+    Text,
     Interval
 )
 
 
 Base = declarative_base()
+
+
+class Copyright(Base):
+    __tablename__ = 'copyright'
+
+    text = Column(Text, primary_key=True, nullable=False)
 
 
 class AircraftType(Base):

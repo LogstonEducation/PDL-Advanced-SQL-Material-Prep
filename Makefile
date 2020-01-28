@@ -4,4 +4,4 @@ data:
 	date
 
 clean:
-	rm hi.txt
+	rm data.sqlite3
