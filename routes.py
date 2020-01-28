@@ -193,7 +193,7 @@ def build_route_flights(aircraft, routes, meal_types):
 
     while week_start < datetime.datetime(2020, 1, 12):
         # for every route in week
-        for route in [routes[0]]:
+        for route in routes:
             airport_pair = frozenset((route.origin_code, route.destination_code))
             craft = aircraft_by_airport_pair[airport_pair]
 
