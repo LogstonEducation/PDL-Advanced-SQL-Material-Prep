@@ -58,7 +58,7 @@ def frequent_flyer_number_generator_function():
 FREQUENT_FLYER_NUMBER_GENERATOR = frequent_flyer_number_generator_function()
 
 
-def create_passenger(all_meal_types):
+def create_passenger(session, all_meal_types):
     first_name, last_name = next(NAME_GENERATOR)
 
     # 10% of people us a frequent flyer number
@@ -79,5 +79,7 @@ def create_passenger(all_meal_types):
         frequent_flyer_number=frequent_flyer_number,
         preferred_meal_types=meal_types,
     )
+
+    session.add(passenger)
 
     return passenger
