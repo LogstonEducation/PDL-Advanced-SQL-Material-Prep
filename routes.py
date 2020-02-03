@@ -170,14 +170,16 @@ def get_aircraft_by_airport_pair(aircraft, routes):
         else:
             non_hub_aircraft.add(craft)
 
-    aircraft_by_airport_pair = {}
+    aircraft_by_airport_pair = collections.defaultdict(list)
     for route in routes:
-        airport_pair = frozenset((route.origin_code, route.destination_code))
+
+        airport_pair = (route.origin_code, route.destination_code)
+
         if airport_pair not in aircraft_by_airport_pair:
             if airport_pair.issubset(HUBS_IATA_CODES):
-                aircraft_by_airport_pair[airport_pair] = hub_aircraft.pop()
+                aircraft_by_airport_pair[airport_pair].append(hub_aircraft.pop())
             else:
-                aircraft_by_airport_pair[airport_pair] = non_hub_aircraft.pop()
+                aircraft_by_airport_pair[airport_pair].append(non_hub_aircraft.pop())
 
     return aircraft_by_airport_pair
 
@@ -212,14 +214,22 @@ def build_route_flight_week(session,
     route_flights = []
 
     for route in routes:
-        airport_pair = frozenset((route.origin_code, route.destination_code))
-        craft = aircraft_by_airport_pair[airport_pair]
+        airport_pair = (route.origin_code, route.destination_code)
+        aircraft = aircraft_by_airport_pair[airport_pair]
+        if len(aircraft) == 0:
+            print(f'No craft for {route}', flush=True)
+            continue
+
+        index = random.randint(0, len(aircraft) - 1)
+        craft = aircraft.pop(index)
 
         start_ts = get_ts(week_start, route.start_day, route.start_time_utc)
         # Add some randomness to make things interesting
+        start_ts += datetime.timedelta(seconds=random.randint(0, 60 * 30))
 
         end_ts = start_ts + route.duration
         # Add some randomness to make things interesting
+        endt_ts += datetime.timedelta(seconds=random.randint(-60 * 30, 60 * 30))
 
         route_flight = RouteFlight(
             route=route,
@@ -228,6 +238,11 @@ def build_route_flight_week(session,
             aircraft=craft,
         )
         route_flights.append(route_flight)
+
+        # Put the plane back in action for another flight departing from
+        # current airport.
+        airport_pair = (route.destination_code, route.origin_code)
+        aircraft_by_airport_pair[airport_pair].append(craft)
 
         build_ticket_related_objects(
              session,
