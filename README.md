@@ -15,5 +15,8 @@ To build one year:
 - 22 hours
 - 6 GB Disk
 
-docker run --name pdl -p 5555:5432 -d postgres:latest
+#### To Run
+
+./reset-db.sh
 python main.py -v "postgresql://postgres@localhost:5555"
+
