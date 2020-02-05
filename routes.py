@@ -273,7 +273,7 @@ def build_ticket_related_objects(session, route_flight, passengers_by_airport_pa
 
         seat_assignment = SeatAssignment(
             route_flight=route_flight,
-            seat_id=seat.number,
+            seat_id=seat.id,
             passenger=passenger,
         )
         seat_assignments.append(seat_assignment)

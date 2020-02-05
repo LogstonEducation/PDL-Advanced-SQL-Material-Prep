@@ -59,7 +59,6 @@ class AircraftSeat(Base):
     __tablename__ = 'aircraft_seat'
 
     id = Column(Integer, primary_key=True)
-    manufacturer = Column(String, nullable=False)
     aircraft_type_id = Column(
         Integer,
         ForeignKey('aircraft_types.id'),
