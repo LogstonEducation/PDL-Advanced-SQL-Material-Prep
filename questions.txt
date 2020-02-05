@@ -49,18 +49,90 @@ ORDER BY count(p.id) DESC
 - What is the annual cost due to unsold seats?
 
 
-
-
 - What Origin Destination combo sells the most?
 
     - Which Origin -> Dest sells out the soonest?
 
 
+- What is the most sold seat?
+
+SELECT count(sa.id), acs.number
+FROM seat_assignments sa
+LEFT JOIN aircraft_seat acs ON acs.id = sa.seat_id
+GROUP BY acs.number
+ORDER BY count(sa.id) DESC;
+
+
 - What is the most unsold seat?
 
+Can not just use least frequently sold seat because some seats may never get sold?
+What is this question even asking? A40 on one plane is not A40 on another plane, 
+because other planes may not even have A40.
+Z100 is the most unsold seat in this case.
+
+We need to look all aircraft, what is the least sold seat over all route flights.
+Group By aircraft.
+For all tickets, seat assignments, 
+
+SELECT at.manufacturer, at.model, acs.number, count(sa.seat_id)
+FROM tickets t
+LEFT JOIN seat_assignments sa ON t.seat_assignment_id = sa.id
+LEFT JOIN aircraft_seat acs ON sa.seat_id = acs.id
+LEFT JOIN aircraft_types at ON acs.aircraft_type_id = at.id
+GROUP BY at.manufacturer, at.model, acs.number;
+
+SELECT at.manufacturer, at.model, acs.number, acs.type, acs.location, count(sa.seat_id)
+FROM tickets t
+LEFT JOIN seat_assignments sa ON t.seat_assignment_id = sa.id
+LEFT JOIN aircraft_seat acs ON sa.seat_id = acs.id
+LEFT JOIN aircraft_types at ON acs.aircraft_type_id = at.id
+GROUP BY at.manufacturer, at.model, acs.number, acs.type, acs.location
+ORDER BY count(sa.seat_id);
 
 
 - What is the most unsold Orig -> Dest
+
+SELECT count(rf.id)
+FROM route_flights rf
+LEFT JOIN aircraft a ON rf.aircraft_id = a.id
+LEFT JOIN aircraft_types at ON a.type_id = at.id
+LEFT JOIN aircraft_seat acs ON at.id = acs.aircraft_type_id
+LEFT JOIN seat_assignments sa ON acs.id = sa.seat_id
+postgres-# WHERE sa.id IS NOT NULL;
+
+SELECT count(rf.id), sum(CASE WHEN sa.id IS NOT NULL THEN 1 ELSE 0 END) 
+FROM route_flights rf
+LEFT JOIN aircraft a ON rf.aircraft_id = a.id
+LEFT JOIN aircraft_types at ON a.type_id = at.id
+LEFT JOIN aircraft_seat acs ON at.id = acs.aircraft_type_id
+LEFT JOIN seat_assignments sa ON acs.id = sa.seat_id
+WHERE rf.id = sa.route_flight_id
+AND rf.id = 2;
+
+Doesn't work because the conditional at the bottom ensures we only collect
+rows where a Seat Assignement exists.
+
+SELECT
+  count(sa.id) as sold,
+  (SELECT count(acs2.id)
+    FROM route_flights rf2
+    LEFT JOIN aircraft a2 ON rf2.aircraft_id = a2.id
+    LEFT JOIN aircraft_types at2 ON a2.type_id = at2.id
+    LEFT JOIN aircraft_seat acs2 ON at2.id = acs2.aircraft_type_id
+    WHERE at.id = acs2.aircraft_type_id)
+FROM route_flights rf
+LEFT JOIN aircraft a ON rf.aircraft_id = a.id
+LEFT JOIN aircraft_types at ON a.type_id = at.id
+LEFT JOIN aircraft_seat acs ON at.id = acs.aircraft_type_id
+LEFT JOIN seat_assignments sa ON acs.id = sa.seat_id
+WHERE rf.id = sa.route_flight_id
+AND rf.id = 2;
+
+
+But how to get answer with single query?
+
+
+
 
 
 
