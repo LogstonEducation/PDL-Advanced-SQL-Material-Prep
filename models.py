@@ -58,13 +58,14 @@ class SeatLocation(enum.Enum):
 class AircraftSeat(Base):
     __tablename__ = 'aircraft_seat'
 
+    id = Column(Integer, primary_key=True)
+    manufacturer = Column(String, nullable=False)
     aircraft_type_id = Column(
-        String,
+        Integer,
         ForeignKey('aircraft_types.id'),
-        primary_key=True
     )
     # Eg. 29C
-    number = Column(String, primary_key=True)
+    number = Column(String, nullable=False)
     # Eg. 1st class, economy, business
     type = Column(Enum(SeatType), nullable=False)
     # location (Asile, Window, Center, etc, 10 seats across)
@@ -88,7 +89,6 @@ class Aircraft(Base):
     type_id = Column(
         Integer,
         ForeignKey('aircraft_types.id'),
-        primary_key=True
     )
     tach_time = Column(Float)
 
@@ -108,8 +108,14 @@ class AircraftMaintenanceEvent(Base):
     __tablename__ = 'aircraft_maintenance_events'
 
     id = Column(Integer, primary_key=True)
-    aircraft_id = Column(Integer, ForeignKey('aircraft.id'), nullable=False)
+    aircraft_id = Column(
+        Integer,
+        ForeignKey('aircraft.id'),
+        nullable=False,
+    )
     event_type = Column(Enum(MaintenanceEventType, nullable=False))
+
+    # aircraft = relationship('Aircraft')
 
     def __repr__(self):
         return f'<{self.__class__.__name__}: {self.id}>'
@@ -203,8 +209,8 @@ class SeatAssignment(Base):
 
     id = Column(Integer, primary_key=True)
     route_flight_id = Column(Integer, ForeignKey('route_flights.id'), nullable=False)
-    seat_id = Column(String, ForeignKey('aircraft_seat.number'), nullable=False)
-    passenger_id = Column(String, ForeignKey('passengers.id'), nullable=False)
+    seat_id = Column(Integer, ForeignKey('aircraft_seat.id'), nullable=False)
+    passenger_id = Column(Integer, ForeignKey('passengers.id'), nullable=False)
 
     route_flight = relationship('RouteFlight')
     passenger = relationship('Passenger')

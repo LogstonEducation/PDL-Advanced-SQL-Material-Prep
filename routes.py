@@ -176,7 +176,7 @@ def get_aircraft_by_airport_pair(aircraft, routes):
         airport_pair = (route.origin_code, route.destination_code)
 
         if airport_pair not in aircraft_by_airport_pair:
-            if airport_pair.issubset(HUBS_IATA_CODES):
+            if frozenset(airport_pair).issubset(HUBS_IATA_CODES):
                 aircraft_by_airport_pair[airport_pair].append(hub_aircraft.pop())
             else:
                 aircraft_by_airport_pair[airport_pair].append(non_hub_aircraft.pop())
@@ -229,7 +229,7 @@ def build_route_flight_week(session,
 
         end_ts = start_ts + route.duration
         # Add some randomness to make things interesting
-        endt_ts += datetime.timedelta(seconds=random.randint(-60 * 30, 60 * 30))
+        end_ts += datetime.timedelta(seconds=random.randint(-60 * 30, 60 * 30))
 
         route_flight = RouteFlight(
             route=route,

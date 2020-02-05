@@ -44,7 +44,7 @@ if __name__ == '__main__':
     import argparse
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('engine_url', default='sqlite:///:memory:')
+    parser.add_argument('engine_url', help='eg. "sqlite:///:memory:"')
     parser.add_argument('--verbose', '-v', action='count', default=0)
 
     args = parser.parse_args()
