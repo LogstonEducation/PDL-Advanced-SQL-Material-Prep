@@ -119,14 +119,73 @@ SELECT
     LEFT JOIN aircraft a2 ON rf2.aircraft_id = a2.id
     LEFT JOIN aircraft_types at2 ON a2.type_id = at2.id
     LEFT JOIN aircraft_seat acs2 ON at2.id = acs2.aircraft_type_id
-    WHERE at.id = acs2.aircraft_type_id)
+    WHERE rf2.id = rf.id) as total
 FROM route_flights rf
 LEFT JOIN aircraft a ON rf.aircraft_id = a.id
 LEFT JOIN aircraft_types at ON a.type_id = at.id
 LEFT JOIN aircraft_seat acs ON at.id = acs.aircraft_type_id
 LEFT JOIN seat_assignments sa ON acs.id = sa.seat_id
 WHERE rf.id = sa.route_flight_id
-AND rf.id = 2;
+AND rf.id = 2
+GROUP BY rf.id;
+
+For all route flights
+
+SELECT
+  rf.id,
+  count(sa.id) as sold,
+  (SELECT count(acs2.id)
+    FROM route_flights rf2
+    LEFT JOIN aircraft a2 ON rf2.aircraft_id = a2.id
+    LEFT JOIN aircraft_types at2 ON a2.type_id = at2.id
+    LEFT JOIN aircraft_seat acs2 ON at2.id = acs2.aircraft_type_id
+    WHERE rf2.id = rf.id) as total
+FROM route_flights rf
+LEFT JOIN aircraft a ON rf.aircraft_id = a.id
+LEFT JOIN aircraft_types at ON a.type_id = at.id
+LEFT JOIN aircraft_seat acs ON at.id = acs.aircraft_type_id
+LEFT JOIN seat_assignments sa ON acs.id = sa.seat_id
+WHERE rf.id = sa.route_flight_id
+GROUP BY rf.id;
+
+postgres=# SELECT
+  div(count(sa.id), 
+  (SELECT count(acs2.id)
+    FROM route_flights rf2
+    LEFT JOIN aircraft a2 ON rf2.aircraft_id = a2.id
+    LEFT JOIN aircraft_types at2 ON a2.type_id = at2.id                                                                                                                                                                LEFT JOIN aircraft_types at2 ON a2.type_id = at2.id
+    LEFT JOIN aircraft_seat acs2 ON at2.id = acs2.aircraft_type_id
+    WHERE rf2.id = rf.id))
+FROM route_flights rf
+LEFT JOIN aircraft a ON rf.aircraft_id = a.id
+LEFT JOIN aircraft_types at ON a.type_id = at.id
+LEFT JOIN aircraft_seat acs ON at.id = acs.aircraft_type_id
+LEFT JOIN seat_assignments sa ON acs.id = sa.seat_id
+WHERE rf.id = sa.route_flight_id
+AND rf.id = 2
+GROUP BY rf.id;
+
+WHY ZERO?
+
+postgres=# SELECT rf.id,
+  (count(sa.id)::decimal /
+  (SELECT count(acs2.id)
+    FROM route_flights rf2
+    LEFT JOIN aircraft a2 ON rf2.aircraft_id = a2.id
+    LEFT JOIN aircraft_types at2 ON a2.type_id = at2.id
+    LEFT JOIN aircraft_seat acs2 ON at2.id = acs2.aircraft_type_id
+    WHERE rf2.id = rf.id)::decimal) as frac_sold
+FROM route_flights rf
+LEFT JOIN aircraft a ON rf.aircraft_id = a.id
+LEFT JOIN aircraft_types at ON a.type_id = at.id
+LEFT JOIN aircraft_seat acs ON at.id = acs.aircraft_type_id
+LEFT JOIN seat_assignments sa ON acs.id = sa.seat_id
+WHERE rf.id = sa.route_flight_id
+AND rf.id = 2
+GROUP BY rf.id;
+
+Show explain.  Add view with this select?
+
 
 
 But how to get answer with single query?
