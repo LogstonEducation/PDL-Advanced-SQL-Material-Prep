@@ -13,6 +13,15 @@ sudo apt update
 sudo apt -y install postgresql-12 postgresql-client-12
 systemctl status postgresql.service
 
+cat <<EOF > /etc/postgresql/12/main/pg_hba.conf
+local   all             all                                     trust
+host    all             all             127.0.0.1/32            trust
+EOF
+
+systemctl restart postgresql.service
+sleep 5
+psql -U postgres -c "CREATE DATABASE airline"
+
 sudo apt install -y python3-venv
 cd ~/pdl-advanced-sql-material-prep
 python3 -m venv env
