@@ -26,4 +26,4 @@ local:
 	./build-db.sh &> build.log &
 
 clean:
-	rm data.sqlite3 build.log
+	rm data.sqlite3 build.log || true
