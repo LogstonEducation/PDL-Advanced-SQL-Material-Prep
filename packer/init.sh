@@ -5,6 +5,9 @@ uptime
 
 curl -sSO https://dl.google.com/cloudagents/install-monitoring-agent.sh
 sudo bash install-monitoring-agent.sh
+rm install-monitoring-agent.sh
+
+sudo apt-get install -y make
 
 sudo apt update && sudo apt install -y git
 ssh-keyscan bitbucket.org >> ~/.ssh/known_hosts

@@ -14,15 +14,17 @@ docker:
 	pipenv run python main.py "postgresql://postgres@localhost:5555/airline"
 	date
 
+
+define BUILD
+date && env/bin/python main.py --weeks 52 "postgresql://postgres@localhost/airline" && date
+endef
+export BUILD
+
 local:
 	psql -U postgres -c "DROP DATABASE airline" || true
 	psql -U postgres -c "CREATE DATABASE airline"
-	source env/bin/activate
-	cat > ./build-db.sh <<EOF
-		date
-		python main.py "postgresql://postgres@localhost:/airline"
-		date
-	EOF
+	echo "$(BUILD)" > ./build-db.sh
+	chmod +x ./build-db.sh
 	./build-db.sh &> build.log &
 
 clean:
