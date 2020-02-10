@@ -151,11 +151,11 @@ def get_ts(week_start, dow, time) -> datetime.datetime:
     return datetime.datetime(
         year=week_start.year,
         month=week_start.month,
-        day=week_start.day + dow.value,
+        day=week_start.day,
         hour=time.hour,
         minute=time.minute,
         second=time.second,
-    )
+    ) + datetime.timedelta(days=dow.value)
 
 
 def get_aircraft_by_airport_pair(aircraft, routes):
@@ -184,14 +184,16 @@ def get_aircraft_by_airport_pair(aircraft, routes):
     return aircraft_by_airport_pair
 
 
-def build_route_flights(session, aircraft, routes, meal_types):
+def build_route_flights(session, weeks, aircraft, routes, meal_types):
     aircraft_by_airport_pair = get_aircraft_by_airport_pair(aircraft, routes)
     passengers_by_airport_pair = collections.defaultdict(list)
 
     # for every week for the past 10 years
-    week_start = datetime.datetime(2020, 1, 5)
+    now = datetime.datetime.now()
+    sunday = now - datetime.timedelta(days=(now.weekday() + 1))
+    week_start = sunday - datetime.timedelta(days=7 * weeks)
 
-    while week_start < datetime.datetime(2020, 1, 12):
+    while week_start < sunday:
         # for every route in week
         build_route_flight_week(
             session,
@@ -345,5 +347,5 @@ def get_cost(distance, aircraft_seat, purchase_ts_offset):
     return round(cost, 2)
 
 
-def insert_route_flights(session, aircraft, routes, meal_types):
-    build_route_flights(session, aircraft, routes, meal_types)
+def insert_route_flights(session, weeks, aircraft, routes, meal_types):
+    build_route_flights(session, weeks, aircraft, routes, meal_types)

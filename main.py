@@ -15,7 +15,7 @@ from copyright import insert_copyright
 from models import Base
 
 
-def main(engine_url, verbose=False):
+def main(engine_url, weeks, verbose=False):
     random.seed(2020)
 
     engine = create_engine(engine_url, echo=verbose)
@@ -32,7 +32,7 @@ def main(engine_url, verbose=False):
     insert_aircraft_maintenance_events(session, aircraft)
     airports = insert_airports(session)
     routes = insert_routes(session, airports)
-    insert_route_flights(session, aircraft, routes, meal_types)
+    insert_route_flights(session, weeks, aircraft, routes, meal_types)
 
     session.commit()
     session.close()
@@ -46,7 +46,8 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('engine_url', help='eg. "sqlite:///:memory:"')
     parser.add_argument('--verbose', '-v', action='count', default=0)
+    parser.add_argument('--weeks', '-w', type=int, default=1)
 
     args = parser.parse_args()
 
-    main(args.engine_url, bool(args.verbose))
+    main(args.engine_url, args.weeks, bool(args.verbose))

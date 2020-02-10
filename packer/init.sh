@@ -3,6 +3,9 @@
 uname -a
 uptime
 
+curl -sSO https://dl.google.com/cloudagents/install-monitoring-agent.sh
+sudo bash install-monitoring-agent.sh
+
 sudo apt update && sudo apt install -y git
 ssh-keyscan bitbucket.org >> ~/.ssh/known_hosts
 git clone git@bitbucket.org:LogstonEducation/pdl-advanced-sql-material-prep.git ~/pdl-advanced-sql-material-prep
