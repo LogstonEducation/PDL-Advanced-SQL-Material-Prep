@@ -15,10 +15,10 @@ from copyright import insert_copyright
 from models import Base
 
 
-def main(engine_url, weeks, verbose=False):
+def main(engine_url, weeks, verbose=0):
     random.seed(2020)
 
-    engine = create_engine(engine_url, echo=verbose)
+    engine = create_engine(engine_url, echo=(verbose > 3))
     Base.metadata.create_all(engine)
 
     Session = sessionmaker(bind=engine)
@@ -32,7 +32,7 @@ def main(engine_url, weeks, verbose=False):
     insert_aircraft_maintenance_events(session, aircraft)
     airports = insert_airports(session)
     routes = insert_routes(session, airports)
-    insert_route_flights(session, weeks, aircraft, routes, meal_types)
+    insert_route_flights(session, weeks, aircraft, routes, meal_types, verbose)
 
     session.commit()
     session.close()
@@ -50,4 +50,4 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    main(args.engine_url, args.weeks, bool(args.verbose))
+    main(args.engine_url, args.weeks, args.verbose)

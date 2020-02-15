@@ -11,6 +11,7 @@ from models import Ticket
 from models import SeatType
 from models import SeatLocation
 from passengers import create_passenger
+from utils import getsize
 
 
 HUBS_IATA_CODES = frozenset([
@@ -184,7 +185,7 @@ def get_aircraft_by_airport_pair(aircraft, routes):
     return aircraft_by_airport_pair
 
 
-def build_route_flights(session, weeks, aircraft, routes, meal_types):
+def build_route_flights(session, weeks, aircraft, routes, meal_types, verbose=0):
     aircraft_by_airport_pair = get_aircraft_by_airport_pair(aircraft, routes)
     passengers_by_airport_pair = collections.defaultdict(list)
 
@@ -194,6 +195,9 @@ def build_route_flights(session, weeks, aircraft, routes, meal_types):
     week_start = sunday - datetime.timedelta(days=7 * weeks)
 
     while week_start < sunday:
+        if verbose:
+            print(f'Working on {week_start} ... ', end='', flush=True)
+
         # for every route in week
         build_route_flight_week(
             session,
@@ -202,9 +206,17 @@ def build_route_flights(session, weeks, aircraft, routes, meal_types):
             aircraft_by_airport_pair,
             passengers_by_airport_pair,
             meal_types,
+            verbose,
         )
 
         week_start += datetime.timedelta(days=7)
+
+        if verbose:
+            print(f'done.', flush=True)
+
+        if verbose > 1:
+            size = getsize(passengers_by_airport_pair)
+            print(f'Size of passengers_by_airport_pair: {size} bytes', flush=True)
 
 
 def build_route_flight_week(session,
@@ -212,7 +224,8 @@ def build_route_flight_week(session,
                             routes,
                             aircraft_by_airport_pair,
                             passengers_by_airport_pair,
-                            meal_types):
+                            meal_types,
+                            verbose=0):
     route_flights = []
 
     for route in routes:
@@ -252,7 +265,6 @@ def build_route_flight_week(session,
              passengers_by_airport_pair,
              meal_types,
         )
-
 
     session.add_all(route_flights)
     session.flush()
@@ -347,5 +359,5 @@ def get_cost(distance, aircraft_seat, purchase_ts_offset):
     return round(cost, 2)
 
 
-def insert_route_flights(session, weeks, aircraft, routes, meal_types):
-    build_route_flights(session, weeks, aircraft, routes, meal_types)
+def insert_route_flights(session, weeks, aircraft, routes, meal_types, verbose=0):
+    build_route_flights(session, weeks, aircraft, routes, meal_types, verbose)

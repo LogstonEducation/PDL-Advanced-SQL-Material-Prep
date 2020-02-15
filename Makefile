@@ -16,16 +16,17 @@ docker:
 
 
 define BUILD
-date && env/bin/python main.py --weeks 52 "postgresql://postgres@localhost/airline" && date
+date && env/bin/python main.py --weeks 2 "postgresql://postgres@localhost/airline" && date
 endef
 export BUILD
 
 local:
 	psql -U postgres -c "DROP DATABASE airline" || true
 	psql -U postgres -c "CREATE DATABASE airline"
-	echo "$(BUILD)" > ./build-db.sh
-	chmod +x ./build-db.sh
-	./build-db.sh &> build.log &
+	echo "$(BUILD)" > ./.build-db.sh
+	chmod +x ./.build-db.sh
+	./.build-db.sh &> build.log &
+	echo "Started Build"
 
 clean:
 	rm data.sqlite3 build.log || true
