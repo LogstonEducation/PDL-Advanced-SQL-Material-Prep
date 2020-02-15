@@ -6,12 +6,12 @@ sqlite:
 docker:
 	docker kill pdl-sql || true
 	docker rm pdl-sql || true
-	docker run --name pdl-sql -p 5555:5432 -d postgres:latest
+	docker run --name pdl-sql -p 5555:5432 -d postgres:11-alpine
 	sleep 5
 	docker exec pdl-sql psql -U postgres -c "DROP DATABASE airline" || true
 	docker exec pdl-sql psql -U postgres -c "CREATE DATABASE airline"
 	date
-	pipenv run python main.py "postgresql://postgres@localhost:5555/airline"
+	python main.py -vv --weeks 1 "postgresql://postgres@localhost:5555/airline"
 	date
 
 
