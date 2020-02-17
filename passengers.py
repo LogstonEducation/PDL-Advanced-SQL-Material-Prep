@@ -31,7 +31,7 @@ def name_generator_function():
     while True:
         first = random.choice(first_names)
         last = random.choice(last_names)
-        yield first, last
+        yield first.strip(), last.strip()
 
 
 NAME_GENERATOR = name_generator_function()

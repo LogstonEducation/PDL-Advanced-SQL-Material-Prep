@@ -14,6 +14,8 @@ WHERE start_ts <= now()
   AND start_ts > now() - INTERVAL '1 year'
 
 
+### Subqueries and Joins!
+
 - What are the highest and lowest mile counts (ie. Tach Time)?
 
 SELECT max(tach_time) as tach_time
@@ -237,6 +239,9 @@ WHERE rf.id = 2
 GROUP BY rf.id;
 
 http://tatiyants.com/pev/#/plans/new
+https://thoughtbot.com/blog/reading-an-explain-analyze-query-plan
+
+
 But how to get answer with single query?
 
 
@@ -267,3 +272,223 @@ But how to get answer with single query?
 
 - Percentage of people that do round trips
 
+- Which passengers have the same name?
+  Join on same table
+
+SELECT *
+FROM passengers p1, passengers p2
+WHERE p1.first_name = p2.first_name
+  AND p1.last_name = p2.last_name
+  AND p1.id < p2.id;
+
+
+### Views
+
+Passengers and their meal types
+
+SELECT p.last_name, p.first_name, mt.name as meal_type
+FROM passengers p
+INNER JOIN passenger_preferred_meal_types ppmt ON ppmt.passenger_id = p.id
+INNER JOIN meal_types mt ON ppmt.meal_type_id = mt.id
+ORDER BY p.last_name, p.first_name, mt.name;
+
+CREATE VIEW passenger_meal_type AS
+SELECT p.last_name, p.first_name, mt.name as meal_type
+FROM passengers p
+INNER JOIN passenger_preferred_meal_types ppmt ON ppmt.passenger_id = p.id
+INNER JOIN meal_types mt ON ppmt.meal_type_id = mt.id
+ORDER BY p.last_name, p.first_name, mt.name;
+
+- CONS:
+  - You can’t insert data into a materialized view as you can with a table.
+  - Unless you use REFRESH MATERIALIZED VIEW sales, the data will be stale.
+  - You cant create an index on a materialized view
+- PROS:
+  - They are quick and can clean up code that would otherwise be too complicated to manage.
+
+# From before...
+
+CREATE MATERIALIZED VIEW sales AS SELECT rf.id,
+     (SELECT count(id)
+      FROM seat_assignments sa
+      WHERE rf.id = sa.route_flight_id) / count(acs.id)::decimal as frac_sold
+FROM route_flights rf
+JOIN aircraft a ON rf.aircraft_id = a.id
+JOIN aircraft_types at ON a.type_id = at.id
+JOIN aircraft_seat acs ON at.id = acs.aircraft_type_id
+GROUP BY rf.id;
+
+- CONS:
+  - You can’t insert data into a materialized view as you can with a table.
+  - Unless you use REFRESH MATERIALIZED VIEW sales, the data will be stale.
+- PROS:
+  - You can create an index on a materialized view
+
+### Subqueries performance!
+
+Where to put them?
+
+EXPLAIN SELECT t3.cost
+FROM (
+  SELECT cost, (SELECT avg(cost) FROM tickets t2) avg_cost
+  FROM tickets t1
+) t3
+WHERE t3.cost > t3.avg_cost;
+
+                                              QUERY PLAN
+------------------------------------------------------------------------------------------------------
+ Seq Scan on tickets t1  (cost=16708.08..42308.13 rows=452215 width=8)
+   Filter: (cost > $1)
+   InitPlan 1 (returns $1)
+     ->  Finalize Aggregate  (cost=16708.07..16708.08 rows=1 width=8)
+           ->  Gather  (cost=16707.85..16708.06 rows=2 width=32)
+                 Workers Planned: 2
+                 ->  Partial Aggregate  (cost=15707.85..15707.86 rows=1 width=32)
+                       ->  Parallel Seq Scan on tickets t2  (cost=0.00..14294.68 rows=565268 width=8)
+
+EXPLAIN SELECT t1.cost
+FROM tickets t1, (SELECT avg(cost) avg_cost FROM tickets) t2
+WHERE t1.cost > t2.avg_cost;
+
+                                           QUERY PLAN
+-------------------------------------------------------------------------------------------------
+ Nested Loop  (cost=16708.07..55874.58 rows=452215 width=8)
+   Join Filter: (t1.cost > (avg(tickets.cost)))
+   ->  Finalize Aggregate  (cost=16708.07..16708.08 rows=1 width=8)
+         ->  Gather  (cost=16707.85..16708.06 rows=2 width=32)
+               Workers Planned: 2
+               ->  Partial Aggregate  (cost=15707.85..15707.86 rows=1 width=32)
+                     ->  Parallel Seq Scan on tickets  (cost=0.00..14294.68 rows=565268 width=8)
+   ->  Seq Scan on tickets t1  (cost=0.00..22208.44 rows=1356644 width=8)
+
+
+EXPLAIN SELECT t1.cost
+FROM tickets t1
+WHERE t1.cost > (SELECT avg(cost) avg_cost FROM tickets);
+
+                                            QUERY PLAN
+---------------------------------------------------------------------------------------------------
+ Seq Scan on tickets t1  (cost=16708.08..42308.13 rows=452215 width=8)
+   Filter: (cost > $1)
+   InitPlan 1 (returns $1)
+     ->  Finalize Aggregate  (cost=16708.07..16708.08 rows=1 width=8)
+           ->  Gather  (cost=16707.85..16708.06 rows=2 width=32)
+                 Workers Planned: 2
+                 ->  Partial Aggregate  (cost=15707.85..15707.86 rows=1 width=32)
+                       ->  Parallel Seq Scan on tickets  (cost=0.00..14294.68 rows=565268 width=8)
+
+
+### CTEs (Common Table Expressions)
+
+
+WITH maxmin AS (
+    SELECT max(tach_time) as tach_time
+    FROM aircraft
+    UNION
+    SELECT min(tach_time) as tach_time
+    FROM aircraft
+)
+SELECT a.id, a.tach_time
+FROM maxmin mm
+LEFT JOIN aircraft a ON mm.tach_time = a.tach_time;
+
+CTEs are great! And let you execute a query once and then use the results all over your main query.
+However:
+ - PostgreSQL (and potentially other DBs) will have trouble moving easy filter params into the CTE.
+ - Also, CTEs are materialized in memory. A whole extra table is created on the fly in memory. For
+   big tables, this can be very memory consuming.
+ - The same indices that you have for your main tables, can not be used on the CTE tables.
+   Thus the queries might be very slow.
+
+See https://medium.com/@hakibenita/be-careful-with-cte-in-postgresql-fca5e24d2119 for more details.
+
+### Math Operations
+
+  abs(-20),
+  # if you need to cast a float, you might need more than float. you might need numeric
+  round(pi()::numeric, 3),
+  ceil(3.14),
+  floor(3.13),
+  round(exp(1.0), 3) as exp,
+  round(ln(exp(1.0)), 2) as ln,
+  log(100),
+  pow(2, 5),
+  sqrt(64),
+  sin(0.0) as sin_0,
+  sind(90.0) as sin_90,
+  cos(0.0) as cos_0,
+  cos(pi()) as cos_pi;
+
+
+SELECT
+  concat('one', 'two'),
+  'one' || 'two' as concat2,
+  'one' || 2 as num_convert,
+  trim(' drop extra spaces '),
+  trim(leading 'x' from 'xxxxremove the first xs'),
+  lower('STOP YELLING'),
+  upper('i will not');
+
+
+LIKE - substr
+
+SELECT *
+FROM passengers
+WHERE first_name LIKE 'Terr%';
+
+SIMILAR TO - for regex
+
+SELECT *
+FROM passengers
+WHERE first_name SIMILAR TO 'Kyl(a|e)\s%';
+
+regexp_split_to_table
+
+SELECT regexp_split_to_table('hi this is so cool', ' ');
+
+regexp_split_to_array -- advanced use
+
+
+### UDFs
+
+CREATE [ OR REPLACE ] FUNCTION name ( [ [ argname ] argtype [, ...] ] )
+    RETURNS rettype
+  { LANGUAGE langname
+    | IMMUTABLE | STABLE | VOLATILE
+    | CALLED ON NULL INPUT | RETURNS NULL ON NULL INPUT | STRICT
+    | [ EXTERNAL ] SECURITY INVOKER | [ EXTERNAL ] SECURITY DEFINER
+    | AS 'definition'
+    | AS 'obj_file', 'link_symbol'
+  } ...
+    [ WITH ( attribute [, ...] ) ]
+
+
+CREATE OR REPLACE FUNCTION fullname(first_name text, last_name text)
+RETURNS text AS
+$$
+-- variables
+DECLARE
+  has_newline bool;
+-- variables
+BEGIN
+  RETURN trim(first_name || ' ' || last_name);
+END;
+$$ LANGUAGE plpgsql;
+
+If there is some whitespace that we want to see...
+
+
+### Transactions
+
+SELECT replace(first_name, E'\n', '\n') FROM passengers;
+
+Let's replace that...
+
+START TRANSACTION; Update passengers SET first_name = replace(first_name, E'\n', '');
+
+SELECT replace(first_name, E'\n', '\n') FROM passengers;
+
+COMMIT; or ROLLBACK;
+-- be sure to rollback if anything goes wrong or else you will forget
+-- you are in state where nothing can be updated/committed.
+-- SELECTs should still be okay though.
