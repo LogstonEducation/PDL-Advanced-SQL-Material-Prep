@@ -404,30 +404,20 @@ See https://medium.com/@hakibenita/be-careful-with-cte-in-postgresql-fca5e24d211
 
 ### Math Operations
 
+SELECT
   abs(-20),
   # if you need to cast a float, you might need more than float. you might need numeric
-  round(pi()::numeric, 3),
-  ceil(3.14),
-  floor(3.13),
-  round(exp(1.0), 3) as exp,
-  round(ln(exp(1.0)), 2) as ln,
-  log(100),
-  pow(2, 5),
-  sqrt(64),
-  sin(0.0) as sin_0,
-  sind(90.0) as sin_90,
-  cos(0.0) as cos_0,
-  cos(pi()) as cos_pi;
-
+  round(pi()::numeric, 5),
+  ln(exp(1.0)) as ln,
+  log(100);
 
 SELECT
   concat('one', 'two'),
-  'one' || 'two' as concat2,
-  'one' || 2 as num_convert,
-  trim(' drop extra spaces '),
-  trim(leading 'x' from 'xxxxremove the first xs'),
-  lower('STOP YELLING'),
-  upper('i will not');
+  'one' || 'two',
+  trim(' remove spaces '),
+  trim(leading '-' from '---510744'),
+  lower('HI'),
+  upper('hello');
 
 
 LIKE - substr
