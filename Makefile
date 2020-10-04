@@ -14,20 +14,12 @@ docker:
 	date
 	python main.py -vv --weeks 1 "postgresql://postgres@localhost:5555/airline"
 	date
-
-
-define BUILD
-date && env/bin/python main.py --weeks 2 "postgresql://postgres@localhost/airline" && date
-endef
-export BUILD
-
-local:
-	psql -U postgres -c "DROP DATABASE airline" || true
-	psql -U postgres -c "CREATE DATABASE airline"
-	echo "$(BUILD)" > ./.build-db.sh
-	chmod +x ./.build-db.sh
-	./.build-db.sh &> build.log &
-	echo "Started Build"
+	docker exec -it pdl-sql /bin/mkdir -p /pdl
+	docker exec -it pdl-sql /bin/cp -R /var/lib/postgresql/data /pdl
+	docker commit $(docker ps | grep pdl-sql | cut -d " " -f 1) logstoneducation/pdl-advanced-sql
+	docker push logstoneducation/pdl-advanced-sql
 
 clean:
 	rm data.sqlite3 build.log || true
+	docker kill pdl-sql || true
+	docker rm pdl-sql || true

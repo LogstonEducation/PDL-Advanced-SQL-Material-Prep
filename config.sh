@@ -29,4 +29,4 @@ sudo apt-get install -y docker-ce docker-ce-cli containerd.io
 
 # Run Docker
 
-sudo docker run -p 5432:5432 --detach --name pdl -t docker.io/logstoneducation/pdl-advanced-sql
+sudo docker run -p 5432:5432 --env PGDATA=pdl --detach --name pdl -t docker.io/logstoneducation/pdl-advanced-sql
