@@ -1,0 +1,12 @@
+Hello {EMAIL}!
+
+You've been issued a server code for use use with the PDL Advanced SQL
+course. Please use the code below to create and configure a Virtual Machine (VM)
+for this course.
+
+Server Code: {SERVER_CODE}
+
+VM Creation Guide: https://docs.google.com/document/d/1vbKJdXfwSeCbhZwaRg_t97D62tR6MSqMiEl5NuvCky4
+
+Best,
+Paul
