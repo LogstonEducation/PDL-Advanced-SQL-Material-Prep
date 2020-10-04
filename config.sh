@@ -28,8 +28,12 @@ sudo apt-get update
 sudo apt-get install -y docker-ce docker-ce-cli containerd.io
 
 # Run Docker
-
+sudo usermod -aG docker $USER
+echo "You will need to exit the terminal and re-enter before docker permissions are reset"
 sudo docker kill pdl || true
 sudo docker rm pdl || true
 sudo docker rmi logstoneducation/pdl-advanced-sql:latest || true
-sudo docker run -p 5432:5432 --env PGDATA=pdl --detach --name pdl -t docker.io/logstoneducation/pdl-advanced-sql
+sudo docker run -p 5432:5432 --env PGDATA=/pdl/data --detach --name pdl -t docker.io/logstoneducation/pdl-advanced-sql
+
+echo "You are all set!"
+echo "Try the following command: pgcli -h localhost -U postgres -d airline"
