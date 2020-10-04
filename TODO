@@ -4,3 +4,36 @@
 # Import SQL to postgres VM
 # Make publci image
 # Write docs on setting up a VM with my public image
+
+
+Other questions to answer:
+
+- What seat is sold last most often? 
+
+- Highest cost flight 
+
+- Lowest Cost flight 
+
+- Highest Profit Flight 
+
+- Lowest Profit Flight 
+
+- What time of day are most planes in air 
+
+- What’s the average flight delay per flight?
+
+- What’s the flight delay for different days of the week?
+
+- What’s the average flight delay for Flight number XYZ1234 (Great subquery question)
+
+- What flights to longer to complete that expected by duration?
+    - Was it weather? Were seasons to blame?
+
+- Where do vegans sit?
+
+- How many fliers are frequent but do not have a frequent flier ID
+
+- Percentage of people that do round trips
+
+- Which passengers have the same name?
+  Join on same table
