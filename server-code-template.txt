@@ -8,5 +8,7 @@ Server Code: {SERVER_CODE}
 
 VM Creation Guide: https://docs.google.com/document/d/1vbKJdXfwSeCbhZwaRg_t97D62tR6MSqMiEl5NuvCky4
 
+Finally, if you have any issues with this code, please reach out to the PDL team.
+
 Best,
 Paul
