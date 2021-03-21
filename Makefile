@@ -18,7 +18,7 @@ build:
 push:
 	docker exec -it pdl-sql /bin/mkdir -p /pdl
 	docker exec -it pdl-sql /bin/cp -R /var/lib/postgresql/data /pdl
-	docker commit $(docker ps | grep pdl-sql | cut -d " " -f 1) logstoneducation/pdl-advanced-sql:latest
+	docker commit $$(docker ps | grep pdl-sql | cut -d " " -f 1) logstoneducation/pdl-advanced-sql:latest
 	docker push logstoneducation/pdl-advanced-sql:latest
 
 dump:

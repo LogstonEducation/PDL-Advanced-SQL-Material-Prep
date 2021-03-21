@@ -37,6 +37,9 @@ sudo docker rm pdl || true
 sudo docker rmi logstoneducation/pdl-advanced-sql:latest || true
 sudo docker run -p 5432:5432 --env PGDATA=/pdl/data --detach --name pdl -t docker.io/logstoneducation/pdl-advanced-sql:latest
 
+# Wait for server to spin up
+sleep 60
+
 # Dump data for possible use with cockroachDB
 pg_dump -U postgres -h 127.0.0.1 -d airline --no-owner --no-comments > airline.sql
 
