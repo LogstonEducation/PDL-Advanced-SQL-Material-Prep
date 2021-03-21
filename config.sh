@@ -1,16 +1,17 @@
 #!/bin/bash
 
-# Install pgcli
+sudo apt update
+sudo apt install -y wget
 
-sudo apt-get update
-sudo apt-get install -y python3-pip libpq-dev
+# Install pgcli
+sudo apt install -y python3-pip libpq-dev
 pip3 install psycopg2-binary pgcli
 
 export PATH=$(eval echo ~$USER)/.local/bin:${PATH}
 echo "export PATH=${PATH}" >> ~/.bashrc
 
 # Install Docker
-sudo apt-get install -y \
+sudo apt install -y \
     apt-transport-https \
     ca-certificates \
     curl \
@@ -24,8 +25,8 @@ sudo add-apt-repository \
    $(lsb_release -cs) \
    stable"
 
-sudo apt-get update
-sudo apt-get install -y docker-ce docker-ce-cli containerd.io
+sudo apt update
+sudo apt install -y docker-ce docker-ce-cli containerd.io
 
 # Run Docker
 sudo usermod -aG docker $USER
@@ -34,6 +35,9 @@ sudo docker kill pdl || true
 sudo docker rm pdl || true
 sudo docker rmi logstoneducation/pdl-advanced-sql:latest || true
 sudo docker run -p 5432:5432 --env PGDATA=/pdl/data --detach --name pdl -t docker.io/logstoneducation/pdl-advanced-sql
+
+# Dump data for possible use with cockroachDB
+pg_dump -U postgres -h 127.0.0.1 -d airline --no-owner --no-comments > airline.sql
 
 echo "You are all set!"
 echo "Try the following command: pgcli -h localhost -U postgres -d airline"

@@ -21,11 +21,12 @@ push: build
 	docker commit $(docker ps | grep pdl-sql | cut -d " " -f 1) logstoneducation/pdl-advanced-sql
 	docker push logstoneducation/pdl-advanced-sql
 
-dump: build
-	pg_dump -U postgres -h 127.0.0.1 -p 5555 -d airline > airline.sql
+dump:
+	pg_dump -U postgres -h 127.0.0.1 -p 5555 -d airline --no-owner --no-comments > airline.sql
 
 gzip: dump
 	gzip airline.sql
+	echo "Upload airline.sql.gz to GCS"
 
 clean:
 	rm data.sqlite3 build.log || true
