@@ -1,4 +1,4 @@
-Create an account at https://cockroachlabs.cloud/. 
+Create an account at https://cockroachlabs.cloud/.
 
 Then create a Free-Tier database and make a note of the "Connect Info" after creation is complete.
 

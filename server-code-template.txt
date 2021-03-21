@@ -1,14 +1,19 @@
 Hello {EMAIL}!
 
-You've been issued a server code for use use with the PDL Advanced SQL
-course. Please use the code below to create and configure a Virtual Machine (VM)
-for this course.
+You've been issued a server code for use use with the PDL Advanced SQL course.
+Please use the code below to create and configure a Virtual Machine (VM) for
+this course.
 
 Server Code: {SERVER_CODE}
 
 VM Creation Guide: https://docs.google.com/document/d/1vbKJdXfwSeCbhZwaRg_t97D62tR6MSqMiEl5NuvCky4
 
-Finally, if you have any issues with this code, please reach out to the PDL team.
+Please note that there is an extra section at the bottom of this guide named
+"CockroachDB (Distribute SQL)". You only need to perform those steps if you
+want to try out CockroachDB. They are not required for this PDL class.
+
+Finally, if you have any issues with this code, please reach out to the PDL
+team.
 
 Best,
 Paul
