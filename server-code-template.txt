@@ -8,9 +8,12 @@ Server Code: {SERVER_CODE}
 
 VM Creation Guide: https://docs.google.com/document/d/1vbKJdXfwSeCbhZwaRg_t97D62tR6MSqMiEl5NuvCky4
 
-Please note that there is an extra section at the bottom of this guide named
-"CockroachDB (Distribute SQL)". You only need to perform those steps if you
-want to try out CockroachDB. They are not required for this PDL class.
+Please give yourself at least 30 minutes to setup this virtual machine before
+class.
+
+Also, please note that there is an extra section at the bottom of this guide
+named "CockroachDB (Distribute SQL)". You only need to perform those steps if
+you want to try out CockroachDB. They are not required for this PDL class.
 
 Finally, if you have any issues with this code, please reach out to the PDL
 team.
