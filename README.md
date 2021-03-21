@@ -17,6 +17,13 @@ To build one year:
 - 22 hours
 - 6 GB Disk
 
+
+#### To Build For Class
+
+```
+make gzip
+```
+
 #### To Run
 
 ./reset-db.sh
