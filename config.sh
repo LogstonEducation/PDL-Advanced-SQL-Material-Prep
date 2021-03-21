@@ -17,7 +17,7 @@ sudo apt install -y \
     curl \
     gnupg-agent \
     software-properties-common \
-	postgresql-client
+	postgresql-client-11
 
 curl -fsSL https://download.docker.com/linux/debian/gpg | sudo apt-key add -
 sudo apt-key fingerprint 0EBFCD88
@@ -35,7 +35,7 @@ echo "You will need to exit the terminal and re-enter before docker permissions 
 sudo docker kill pdl || true
 sudo docker rm pdl || true
 sudo docker rmi logstoneducation/pdl-advanced-sql:latest || true
-sudo docker run -p 5432:5432 --env PGDATA=/pdl/data --detach --name pdl -t docker.io/logstoneducation/pdl-advanced-sql
+sudo docker run -p 5432:5432 --env PGDATA=/pdl/data --detach --name pdl -t docker.io/logstoneducation/pdl-advanced-sql:latest
 
 # Dump data for possible use with cockroachDB
 pg_dump -U postgres -h 127.0.0.1 -d airline --no-owner --no-comments > airline.sql

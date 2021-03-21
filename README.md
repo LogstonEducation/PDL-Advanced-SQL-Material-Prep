@@ -21,6 +21,11 @@ To build one year:
 
 ```
 make build
+
+# To push to docker hub...
+make push
+
+# To download data as .sql file
 make gzip
 ```
 
