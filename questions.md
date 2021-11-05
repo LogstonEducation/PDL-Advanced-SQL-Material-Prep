@@ -68,6 +68,16 @@ HAVING count(p.id) > 1
 ORDER BY count(p.id) DESC;
 ```
 
+##### How many passengers have the same name?
+
+```
+SELECT *
+FROM passengers p1, passengers p2
+WHERE p1.first_name = p2.first_name
+  AND p1.last_name = p2.last_name
+  AND p1.id < p2.id;
+```
+
 ##### What Origin Destination combo sells the most?
 
   - Thought plan:
@@ -259,15 +269,6 @@ GROUP BY rf.id;
 
 http://tatiyants.com/pev/#/plans/new
 https://thoughtbot.com/blog/reading-an-explain-analyze-query-plan
-
-```
-SELECT *
-FROM passengers p1, passengers p2
-WHERE p1.first_name = p2.first_name
-  AND p1.last_name = p2.last_name
-  AND p1.id < p2.id;
-```
-
 
 ### Views
 
