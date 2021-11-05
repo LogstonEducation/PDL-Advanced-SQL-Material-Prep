@@ -14,8 +14,8 @@ database and loading the "airline" DB into that database.
    already, create a free Serverless cluster. After you create your cluster you
    will be shown a "Connection Info" modal with means of connecting your
    cluster based on OS. If you are on a linux (eg. Debian, Ubuntu) machine,
-   ensure you've changed "Choose your OS" to linux. Copy and run, all three
-   steps listed to insure you can connect to the cluster.
+   ensure you've changed "Choose your OS" to linux. Copy and run all three
+   steps listed to ensure you can connect to the cluster.
 
 1. Once you know you can connect to your cluster, navigate back to
    Cockroachlabs.cloud and to the "SQL users" page for your cluster. Change the
