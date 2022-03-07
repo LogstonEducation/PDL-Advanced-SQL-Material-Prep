@@ -5,6 +5,7 @@
 # Make publci image
 # Write docs on setting up a VM with my public image
 
+Consier moving to CockroachDB and MovR database.
 
 Other questions to answer:
 
