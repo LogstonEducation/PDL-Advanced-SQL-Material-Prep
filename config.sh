@@ -17,14 +17,15 @@ sudo apt install -y \
     curl \
     gnupg-agent \
     software-properties-common \
-	postgresql-client-11
+    postgresql-client-13
 
 curl -fsSL https://download.docker.com/linux/debian/gpg | sudo apt-key add -
 sudo apt-key fingerprint 0EBFCD88
-sudo add-apt-repository \
+sudo echo \
    "deb [arch=amd64] https://download.docker.com/linux/debian \
    $(lsb_release -cs) \
-   stable"
+   stable" > /tmp/docker.list
+sudo mv /tmp/docker.list /etc/apt/sources.list.d/docker.list
 
 sudo apt update
 sudo apt install -y docker-ce docker-ce-cli containerd.io
