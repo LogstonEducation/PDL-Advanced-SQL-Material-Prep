@@ -3,8 +3,8 @@
 ```
 SELECT count(*)
 FROM route_flights
-WHERE start_ts >= '2020-01-01'
-  AND start_ts < '2021-01-01'
+WHERE start_ts >= '2021-03-07'
+  AND start_ts < '2021-03-14';
 ```
 
 ##### How many flights in the past year?
@@ -44,7 +44,7 @@ WHERE a.tach_time in (
 );
 ```
 
-##### How many times has each FF# been used?
+##### How many times has each FF# been used? Are multiple customers using the same FF#?
 
 ```
 SELECT p.frequent_flyer_number, count(p.id)
@@ -132,8 +132,7 @@ be specific aircraft type, seat class, etc.
 
 ```
 SELECT at.manufacturer, at.model, acs.number, count(sa.seat_id)
-FROM tickets t
-LEFT JOIN seat_assignments sa ON t.seat_assignment_id = sa.id
+FROM seat_assignments sa
 LEFT JOIN aircraft_seat acs ON sa.seat_id = acs.id
 LEFT JOIN aircraft_types at ON acs.aircraft_type_id = at.id
 GROUP BY at.manufacturer, at.model, acs.number;
@@ -141,8 +140,7 @@ GROUP BY at.manufacturer, at.model, acs.number;
 
 ```
 SELECT at.manufacturer, at.model, acs.number, acs.type, acs.location, count(sa.seat_id)
-FROM tickets t
-LEFT JOIN seat_assignments sa ON t.seat_assignment_id = sa.id
+FROM seat_assignments sa
 LEFT JOIN aircraft_seat acs ON sa.seat_id = acs.id
 LEFT JOIN aircraft_types at ON acs.aircraft_type_id = at.id
 GROUP BY at.manufacturer, at.model, acs.number, acs.type, acs.location
@@ -163,13 +161,13 @@ GROUP BY sa.route_flight_id;
 This gives us the total number of seats on the plane.
 
 ```
-SELECT count(acs.id) as total
-FROM route_flights rf
-LEFT JOIN aircraft a ON rf.aircraft_id = a.id
-LEFT JOIN aircraft_types at ON a.type_id = at.id
-LEFT JOIN aircraft_seat acs ON at.id = acs.aircraft_type_id
-WHERE rf.id = 2
-GROUP BY rf.id;
+select count(acs.id) as total
+from route_flights rf
+left join aircraft a on rf.aircraft_id = a.id
+left join aircraft_types at on a.type_id = at.id
+left join aircraft_seat acs on at.id = acs.aircraft_type_id
+where rf.id = 2
+group by rf.id;
 ```
 
 Can we combine the two? Yep.
@@ -207,22 +205,6 @@ GROUP BY rf.id;
 ```
 
 Why zero?
-
-```
-SELECT
-    div(
-     (SELECT count(id)
-      FROM seat_assignments sa
-      WHERE rf.id = sa.route_flight_id),
-     count(acs.id)
-    )
-FROM route_flights rf
-LEFT JOIN aircraft a ON rf.aircraft_id = a.id
-LEFT JOIN aircraft_types at ON a.type_id = at.id
-LEFT JOIN aircraft_seat acs ON at.id = acs.aircraft_type_id
-WHERE rf.id = 2
-GROUP BY rf.id;
-```
 
 Hmmm, maybe its doing integer division? In that case, we need to drop the "div" function too.
 
@@ -406,7 +388,7 @@ See https://medium.com/@hakibenita/be-careful-with-cte-in-postgresql-fca5e24d211
 ```
 SELECT
   abs(-20),
-  # if you need to cast a float, you might need more than float. you might need numeric
+  -- if you need to cast a float, you might need more than float. you might need numeric
   round(pi()::numeric, 5),
   ln(exp(1.0)) as ln,
   log(100);
@@ -435,7 +417,7 @@ SIMILAR TO - for regex
 ```
 SELECT *
 FROM passengers
-WHERE first_name SIMILAR TO 'Kyl(a|e)\s%';
+WHERE first_name SIMILAR TO 'Kyl(a|e)%';
 ```
 
 regexp_split_to_table
